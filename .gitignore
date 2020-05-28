@@ -1,0 +1,3 @@
+node_modules/
+/zk-single-kafka-single/
+.env
