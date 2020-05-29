@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const Twitter = require('twitter-lite');
-const { Kafka, logLevel } = require('kafkajs');
+const { Kafka } = require('kafkajs');
 
 const KAFKA_TOPIC = 'new-mention';
 const SUPPPORTED_LANGUAGES = ['en', 'de'];
@@ -26,7 +26,6 @@ async function getKafkaClient() {
     return new Kafka({
         clientId: 'twitter-crawler',
         brokers: [process.env.KAFKA_BROKER],
-        logLevel: logLevel.DEBUG,
         retry: {
             initialRetryTime: 5000,
             maxRetryTime: 10000,
@@ -37,7 +36,6 @@ async function getKafkaClient() {
 
 class TwitterCrawler {
     async start() {
-        console.log('process.env', process.env);
         this.twitterClient = await getTwitterClient();
         this.kafkaClient = await getKafkaClient();
         this.kafkaProducer = await this.kafkaClient.producer();
@@ -66,7 +64,6 @@ class TwitterCrawler {
         const parsedTweet = this.parseTweet(tweet);
 
         if (parsedTweet) {
-            console.log('Add to topic', KAFKA_TOPIC, parsedTweet);
             this.kafkaProducer.send({
                 topic: KAFKA_TOPIC,
                 messages: [{ value: JSON.stringify(parsedTweet) }],
